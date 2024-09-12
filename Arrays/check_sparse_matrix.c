@@ -10,7 +10,7 @@
 void die(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    fprintf(stderr, fmt, args);
+    vfprintf(stderr, fmt, args);
     va_end(args);
     exit(EXIT_FAILURE);
 }
@@ -66,6 +66,13 @@ bool check_sparse(const int** matrix, size_t rows, size_t cols) {
     return zeros > (rows * cols) / 2;
 }
 
+void free_matrix(int** matrix, size_t rows){
+    for (size_t i = 0; i < rows; i++) {
+        free(matrix[i]);
+    }
+    free(matrix);
+}
+
 int main() {
     size_t rows, cols;
     printf("Enter matrix dimensions (max is 10 for each dimension)\n");
@@ -83,6 +90,8 @@ int main() {
     } else {
         printf("Matrix is NOT sparse\n");
     }
+
+    free_matrix(matrix, rows);
 
     return EXIT_SUCCESS;
 }
