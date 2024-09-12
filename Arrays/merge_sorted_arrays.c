@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <limits.h>
 
 #define MAX_ARRAYS 5
 #define MAX_ARRAY_SIZE 20
@@ -39,6 +40,43 @@ void fill_arrays(int** arrays, int n_arrays, const size_t* sizes) {
     }
 }
 
+// Sums array of size_t values
+size_t sum_sizes(const size_t* sizes, int n_arrays) {
+    size_t res = 0;
+    for (int i = 0; i < n_arrays; i++) {
+        res += sizes[i];
+    }
+    return res;
+}
+
+// Returns smallest element of the elements in arrays pointed to by pointers
+int pick_smallest(const int** arrays, int n_arrays, size_t* pointers) {
+    int smallest = INT_MAX;
+    int smallest_index = -1;
+    for (int i = 0; i < n_arrays; i++) {
+        if (arrays[i][pointers[i]] < smallest) {
+            smallest_index = i;
+            smallest = arrays[i][pointers[i]];
+        }
+    }
+
+    pointers[smallest_index]++;
+    return smallest;
+}
+
+// Merges sorted arrays sorted in arrays variable.
+// Returns pointer to new dynamically allocated array
+int* merge_sorted_arrays(const int** arrays, int n_arrays, const size_t* sizes) {
+    size_t pointers[MAX_ARRAYS] = {0};
+
+    size_t new_size = sum_sizes(sizes, n_arrays);
+    int* arr = (int*)malloc(new_size * sizeof(int));
+
+    for (size_t i = 0; i < new_size; i++) {
+        // TODO
+    }
+}
+
 int main() {
     int n_arrays;
     printf("Give number of arrays to merge: ");
@@ -58,6 +96,7 @@ int main() {
 
     fill_arrays(arrays, n_arrays, (const size_t*)sizes);
 
+    
 
     return EXIT_SUCCESS;
 }
