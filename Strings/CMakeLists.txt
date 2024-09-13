@@ -4,11 +4,13 @@ project(Strings)
 
 add_compile_options(-Wall -g)
 
+
 add_executable(palindrome palindrome.c)
 add_executable(firstrep first_repetition.c)
+add_executable(countchars character_counter.c)
 
 set_target_properties(
-    palindrome firstrep
+    palindrome firstrep countchars
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
