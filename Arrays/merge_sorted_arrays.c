@@ -50,11 +50,11 @@ size_t sum_sizes(const size_t* sizes, int n_arrays) {
 }
 
 // Returns smallest element of the elements in arrays pointed to by pointers
-int pick_smallest(const int** arrays, int n_arrays, size_t* pointers) {
+int pick_smallest(const int** arrays, int n_arrays, size_t* pointers, const size_t* sizes) {
     int smallest = INT_MAX;
     int smallest_index = -1;
     for (int i = 0; i < n_arrays; i++) {
-        if (arrays[i][pointers[i]] < smallest) {
+        if (pointers[i] < sizes[i] && arrays[i][pointers[i]] < smallest) {
             smallest_index = i;
             smallest = arrays[i][pointers[i]];
         }
@@ -65,16 +65,26 @@ int pick_smallest(const int** arrays, int n_arrays, size_t* pointers) {
 }
 
 // Merges sorted arrays sorted in arrays variable.
-// Returns pointer to new dynamically allocated array
-int* merge_sorted_arrays(const int** arrays, int n_arrays, const size_t* sizes) {
+// Returns pointer to new dynamically allocated array and saves new size to new_size
+int* merge_sorted_arrays(const int** arrays, int n_arrays, const size_t* sizes, size_t* new_size) {
     size_t pointers[MAX_ARRAYS] = {0};
 
-    size_t new_size = sum_sizes(sizes, n_arrays);
-    int* arr = (int*)malloc(new_size * sizeof(int));
+    *new_size = sum_sizes(sizes, n_arrays);
+    int* arr = (int*)malloc(*new_size * sizeof(int));
 
-    for (size_t i = 0; i < new_size; i++) {
-        // TODO
+    for (size_t i = 0; i < *new_size; i++) {
+        arr[i] = pick_smallest(arrays, n_arrays, pointers, sizes);
     }
+
+    return arr;
+}
+
+// Prints array of size n to stdout
+void print_arr(int* arr, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        printf("%d ", arr[i]);
+    }
+    putchar('\n');
 }
 
 int main() {
@@ -96,7 +106,15 @@ int main() {
 
     fill_arrays(arrays, n_arrays, (const size_t*)sizes);
 
-    
+    size_t new_size;
+    int* merged = merge_sorted_arrays((const int**)arrays, n_arrays, (const size_t*)sizes, &new_size);
+
+    print_arr(merged, new_size);
+
+    for (int i = 0; i < n_arrays; i++) {
+        free(arrays[i]);
+    }
+    free(merged);
 
     return EXIT_SUCCESS;
 }
