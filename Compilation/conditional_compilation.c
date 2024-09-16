@@ -25,8 +25,22 @@ int main() {
     double after_discount = total_amount - total_amount * discount;
 
     #ifdef FESTIVAL
-        after_discount = after_discount - after_discount * FESTIVAL;
+        double after_fest_discount = after_discount - after_discount * FESTIVAL;
     #endif
+
+    printf("Quantity = %d\n", QUANTITY);
+    printf("Price = %.2lf\n", price);
+    printf("Total amount = %.2lf\n", total_amount);
+    putchar('\n');
+    printf("Discount = %.2lf\n", discount);
+    printf("Discounted price = %.2lf\n", after_discount);
+    putchar('\n');
+    #ifdef FESTIVAL
+        printf("Festival discount = %.2f\n", FESTIVAL);
+        printf("Price after festival discount = %.2lf\n", after_fest_discount);
+    #endif
+
+    // And so on with the rest
 
     return EXIT_SUCCESS;
 }
