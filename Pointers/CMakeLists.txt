@@ -5,9 +5,10 @@ project(Pointers)
 add_compile_options(-Wall -g -std=gnu17)
 
 add_executable(strrev reverse_string.c)
+add_executable(findmax find_max.c)
 
 set_target_properties(
-    strrev
+    strrev findmax
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
