@@ -54,7 +54,11 @@ int main(int argc, char** argv) {
     bool uppercase = false;
     char buf[BUFSIZ];
     while(!feof(fp)) {
-        fread(buf, sizeof(char), BUFSIZ, fp);
+        size_t bytes = fread(buf, sizeof(char), BUFSIZ - 1, fp); // -1 for to make place for \0
+        if (ferror(fp)) {
+            die("Error reading from file!\n");
+        }
+        buf[bytes] = '\0';
         if (uppercase) {
             str_to_upper(buf);
         } else {
