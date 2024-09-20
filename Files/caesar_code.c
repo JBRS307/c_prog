@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <ctype.h>
 
 #define LETTERS ((int)('z' - 'a' + 1))
 #define TEMPNAME "./temp.txt"
@@ -10,6 +11,8 @@ typedef enum {
     ENCRYPT,
     DECRYPT,
 } Action;
+// Technically decryption mode can be used for encryption and viceversa
+// The person just should remember which one they used
 
 void die(const char* fmt, ...) {
     va_list args;
@@ -52,9 +55,30 @@ void parse_args(int argc, char** argv,
             break;
     }
 
-    size_t path_leng = strlen(argv[1]);
-    *filepath = (char*)malloc(path_leng + 1);
-    strcpy(*filepath, argv[1]);
+    *filepath = argv[1];
+}
+
+// Moves alphabetic character by code
+int transpone(int c, int code) {
+    int c_new;
+    if (islower(c)) {
+        c_new = c + code;
+        if (c_new > 'z') {
+            c_new = ('a' - 1) + (c_new - 'z');
+        } else if (c_new < 'a') {
+            c_new = ('z' + 1) - ('a' - c_new);
+        }
+    } else if (isupper(c)) {
+        c_new = c + code;
+        if (c_new > 'Z') {
+            c_new = ('A' - 1) + (c_new - 'Z');
+        } else if (c_new < 'A') {
+            c_new = ('Z' + 1) - ('A' - c_new);
+        }
+    } else {
+        c_new = c;
+    }
+    return c_new;
 }
 
 int main(int argc, char** argv) {
@@ -64,21 +88,51 @@ int main(int argc, char** argv) {
 
     parse_args(argc, argv, &action, &code, &filepath);
 
+    if (action == DECRYPT) {
+        code *= -1;
+    }
+
     FILE* fp_read = fopen(filepath, "r");
     if (fp_read == NULL) {
         perror_die("ERROR fopen");
     }
     FILE* fp_write = fopen(TEMPNAME, "w");
     if (fp_write == NULL) {
+        fclose(fp_read);
         perror_die("ERROR fopen");
     }
     int c;
     while ((c = fgetc(fp_read)) != EOF) {
-
+        int c_new = transpone(c, code);
+        if (fputc(c_new, fp_write) == EOF) {
+            fclose(fp_read);
+            fclose(fp_write);
+            if (remove(TEMPNAME) < 0) {
+                perror("ERROR remove");
+            }
+            die("Error while writing to file!\n");
+        }
     }
     if (ferror(fp_read)) {
-        die("Error reading from file!\n");
+        fclose(fp_read);
+        fclose(fp_write);
+        if (remove(TEMPNAME) < 0) {
+            perror("ERROR remove");
+        }
+        die("Error while reading from file!\n");
     }
 
+    fclose(fp_read);
+    fclose(fp_write);
+
+    if (remove(filepath) < 0) {
+        perror_die("ERROR remove");
+    }
+
+    if (rename(TEMPNAME, filepath) < 0) {
+        perror_die("ERROR rename");
+    }
+
+    printf("Success!\n");
     return EXIT_SUCCESS;
 }
