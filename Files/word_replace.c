@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <ctype.h>
 
+#define TEMPNAME "./temp.txt"
+
 void die(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -140,28 +142,51 @@ void replace_word(char* str, const char* old_word, const char* new_word) {
 }
 
 int main(int argc, char** argv) {
-    char* filename;
+    char* filepath;
     char* old_word;
     char* new_word;
 
-    parse_args(argc, argv, &filename, &old_word, &new_word);
+    parse_args(argc, argv, &filepath, &old_word, &new_word);
 
-    FILE* fp = fopen(filename, "r");
-    if (fp == NULL) {
+    FILE* fp_read = fopen(filepath, "r");
+    if (fp_read == NULL) {
         perror_die("ERROR fopen");
     }
 
+    FILE* fp_write = fopen(TEMPNAME, "w");
     char buf[BUFSIZ];
-    while (fgets(buf, BUFSIZ, fp) != NULL) {
+    while (fgets(buf, BUFSIZ, fp_read) != NULL) {
         replace_word(buf, old_word, new_word);
-        printf("%s", buf);
+        // printf("%s", buf);
+        if (fputs(buf, fp_write) == EOF) {
+            fclose(fp_read);
+            fclose(fp_write);
+            if (remove(TEMPNAME) < 0) {
+                perror("ERROR remove");
+            }
+            die("Error while writing to file!\n");
+        }
     }
-    if (ferror(fp)) {
+    if (ferror(fp_read)) {
+        fclose(fp_read);
+        fclose(fp_write);
+        if (remove(TEMPNAME) < 0) {
+            perror("ERROR remove");
+        }
         die("Error while reading from file!\n");
     }
+    fclose(fp_write);
+    fclose(fp_read);
 
-    fclose(fp);
+    if (remove(filepath) < 0) {
+        perror_die("ERROR remove");
+    }
+    if (rename(TEMPNAME, filepath) < 0) {
+        perror_die("ERROR rename");
+    }
+
     free(old_word);
     free(new_word);
+    printf("Success!\n");
     return EXIT_SUCCESS;
 }
