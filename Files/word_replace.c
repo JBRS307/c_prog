@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <assert.h>
 #include <ctype.h>
 
 void die(const char* fmt, ...) {
@@ -17,6 +18,7 @@ void perror_die(const char* msg) {
     exit(EXIT_FAILURE);
 }
 
+// Removes all whitespaces on the beginning of the string
 char* ltrim(char* str) {
     char* s = str;
     while (isspace(*s)) {
@@ -25,6 +27,7 @@ char* ltrim(char* str) {
     return s;
 }
 
+// Cuts first word from the string and trims it
 void cut_word(char* buf, char** left) {
     char* l;
     char* r;
@@ -78,9 +81,62 @@ void parse_args(int argc, char** argv,
     *filename = argv[1];
 }
 
+typedef enum {
+    NONE,
+    LEFT,
+    RIGHT,
+} Direction;
+
 // Replaces all occurences of old_word to new_word in a string str
 void replace_word(char* str, const char* old_word, const char* new_word) {
-    // At this moment i don't care about overflowing the buffer
+    // At this moment i don't care about overflowing the buffer so if
+    // buffer is to slow behavior is undefined
+
+    size_t old_leng = strlen(old_word);
+    size_t new_leng = strlen(new_word);
+
+    size_t diff;
+    // If new_leng is bigger than old_leng then we shift
+    // otherwise we unshift
+    Direction direction;
+    if (new_leng > old_leng) {
+        direction = RIGHT;
+        diff = new_leng - old_leng;
+    } else if (old_leng > new_leng) {
+        direction = LEFT;
+        diff = old_leng - new_leng;
+    } else {
+        direction = NONE;
+        diff = 0;
+    }
+
+    char* old;
+    char* old_end;
+    size_t bytes_left;
+    while ((old = strstr(str, old_word)) != NULL) {
+        if (direction != NONE) {
+            old_end = old;
+            while (!isspace(*old_end)) {
+                old_end++;
+            }
+            bytes_left = strlen(old_end);
+            switch (direction) {
+                case RIGHT:
+                    memmove((void*)(old_end + diff), (void*)old_end, bytes_left + 1);
+                    break;
+                case LEFT:
+                    memmove((void*)(old_end - diff), (void*)old_end, bytes_left + 1);
+                    break;
+                case NONE:
+                    assert(0 && "Unreachable");
+                    break;
+            }
+        }
+        // memcpy instead of strcpy, because I don't want to copy
+        // null terminator
+        memcpy((void*)old, (void*)new_word, new_leng);
+    }
+    
 }
 
 int main(int argc, char** argv) {
@@ -88,21 +144,23 @@ int main(int argc, char** argv) {
     char* old_word;
     char* new_word;
 
+    parse_args(argc, argv, &filename, &old_word, &new_word);
+
     FILE* fp = fopen(filename, "r");
     if (fp == NULL) {
         perror_die("ERROR fopen");
     }
 
     char buf[BUFSIZ];
-    while(!feof(fp)) {
-        if (fgets(buf, BUFSIZ, fp) == NULL) {
-            die("Error while reading from file!\n");
-        }
-
-        
+    while (fgets(buf, BUFSIZ, fp) != NULL) {
+        replace_word(buf, old_word, new_word);
+        printf("%s", buf);
+    }
+    if (ferror(fp)) {
+        die("Error while reading from file!\n");
     }
 
-
+    fclose(fp);
     free(old_word);
     free(new_word);
     return EXIT_SUCCESS;
