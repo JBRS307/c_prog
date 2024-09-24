@@ -11,9 +11,10 @@ link_directories(${MYSQL_LINK_DIR})
 link_libraries(-lmysqlclient)
 
 add_executable(display display_all_tables.c)
+add_executable(insert insert_into_table.c)
 
 set_target_properties(
-    display
+    display insert
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
