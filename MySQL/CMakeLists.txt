@@ -14,9 +14,10 @@ add_executable(display display_all_tables.c)
 add_executable(insert insert_into_table.c)
 add_executable(search search.c)
 add_executable(update update.c)
+add_executable(delete delete.c)
 
 set_target_properties(
-    display insert search update
+    display insert search update delete
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
