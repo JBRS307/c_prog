@@ -80,7 +80,7 @@ int main() {
     while ((row = mysql_fetch_row(res)) != NULL) {
         printf("Email address: %s\n"
                "Password: %s\n"
-               "Address: %s\n", row[0], row[1], row[2]);
+               "Address: %s\n", row[1], row[2], row[3]);
     }
 
     mysql_free_result(res);
