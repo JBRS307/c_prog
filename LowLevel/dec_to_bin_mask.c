@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define ASCIICONV 48
-#define BINBLOCK 64
+#define BINBLOCK (32+1)
 
 void die(const char* fmt, ...) {
     va_list args;
@@ -27,9 +27,37 @@ char* dec_to_bin(unsigned int dec) {
         char* c = (char*)malloc(2);
         *c = '0';
         *(c + 1) = '\0';
+        return c;
     }
 
-    // TODO
+    unsigned int mask = 1 << 31;
+
+    char* bin = (char*)malloc(BINBLOCK);
+    *bin = 0;
+    char* curr_bin_digit = bin;
+
+    while (mask != 0) {
+        if (dec & mask) {
+            *curr_bin_digit = '1';
+        } else {
+            *curr_bin_digit = '0';
+        }
+        curr_bin_digit++;
+        mask >>= 1;
+    }
+    *curr_bin_digit = 0;
+
+    curr_bin_digit = bin;
+    while (*curr_bin_digit == '0') {
+        curr_bin_digit++;
+    }
+
+    char* res = (char*)malloc(BINBLOCK);
+    *res = 0;
+    strcpy(res, curr_bin_digit);
+
+    free(bin);
+    return res;
 }
 
 int main() {
@@ -39,7 +67,10 @@ int main() {
         die("Invalid input!\n");
     } 
 
+    char* bin = dec_to_bin(dec);
 
+    printf("Binary form of %d is %s\n", dec, bin);
 
+    free(bin);
     return EXIT_SUCCESS;
 }
